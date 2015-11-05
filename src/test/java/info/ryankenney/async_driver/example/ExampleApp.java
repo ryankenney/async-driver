@@ -48,7 +48,6 @@ public class ExampleApp {
 		final AsyncTask<User,Permissions> readUserPermissions = new AsyncTask<User,Permissions>() {
 			public void run(final User user, final ResultHandler<Permissions> resultHandler) {
 				webServer.readUserPermissions(user, new ReturnCallback<Permissions> () {
-					@Override
 					public void handleResult(Permissions result) {
 						resultHandler.reportComplete(result);
 					}
@@ -72,7 +71,6 @@ public class ExampleApp {
 		final AsyncTask<Void,String> promptUserForNewValue = new AsyncTask<Void,String>() {
 			public void run(final Void  arg, final ResultHandler<String> resultHandler) {
 				userInterface.promptForNewValue(new ReturnCallback<String> () {
-					@Override
 					public void handleResult(String result) {
 						resultHandler.reportComplete(result);
 					}
@@ -83,7 +81,6 @@ public class ExampleApp {
 		final AsyncTask<String,Status> updateStoredValue = new AsyncTask<String,Status>() {
 			public void run(final String value, final ResultHandler<Status> resultHandler) {
 				webServer.storeValue(value, new ReturnCallback<Status> () {
-					@Override
 					public void handleResult(Status result) {
 						resultHandler.reportComplete(result);
 					}
