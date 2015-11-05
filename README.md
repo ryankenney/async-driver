@@ -4,7 +4,7 @@ async-driver
 The Problem
 --------------------
 
-Imagine that you want to model this logic in a gui:
+Imagine that you want to model this logic in a java gui:
 
 * On User Click
 	* Read User Permissions
