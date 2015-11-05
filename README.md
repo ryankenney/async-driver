@@ -16,7 +16,7 @@ Imagine that you want to model this logic in a gui:
 	* If User Does Not Have "edit" Permissions
 		* Notify User of Permissions Issue
 
-Because many of these actions are "asynchronous" (they require a server or user response before resuming), you can end up with code that looks like this:
+Because many of these actions are asynchronous (they require a server or user response before resuming), you can end up with code that looks like this:
 
 ```java
 	public void onUserClick() {
@@ -66,7 +66,7 @@ Because many of these actions are "asynchronous" (they require a server or user 
 
 Where did that nice little block of conditional logic go? It got smeared across all of the callback methods necesssary to string the asynchronous actions together.
 
-A New Solution (async-driver)
+A Solution (async-driver)
 --------------------
 
 With async-driver, we can define the logic block as if everything is synchronous.
