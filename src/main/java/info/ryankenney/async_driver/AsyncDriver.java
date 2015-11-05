@@ -26,7 +26,7 @@ public class AsyncDriver {
 		}
 	}
 
-	public <A,R> R execute(final AsyncTask<A, R> task) {
+	public <A,R> R execute(final Task<A, R> task) {
 		return execute(task, null);
 	}
 	
