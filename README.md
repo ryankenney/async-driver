@@ -92,7 +92,7 @@ For example, this models the logic above:
 ```
 
 From here, you have to wrap each of the asynchronous actions in a Task object,
-but the resulting code is arguably much more legible. Here is a full example:
+but the resulting code is arguably much more legible. Here is a more complete example:
 
 ```java
 WebServer webServer;
