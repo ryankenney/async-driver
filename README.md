@@ -170,3 +170,48 @@ public void onUserClick() {
 }
 ```
 
+Considerations
+--------------------
+
+The general rule: *Any read/write actions that interact with data outside of method-scoped variables of the DriverBody
+need to be wrapped in Tasks.*
+
+
+This is because the result of each Task is cached and replayed as the DriverBody is re-executed on the return of
+each asynchronous action. For example, looking at the previous code sample, you can see that the DriverBody
+leverages three asynchronous Tasks:
+
+* readUserPermissions
+* promptUserForNewValue
+* updateStoredValue
+
+This means that the async-driver will cause the following order of execution:
+
+* DriverBody executes logic until "readUserPermissions".
+* DriverBody executes "readUserPermissions", and then returns, awaiting an asynchrnous callback to wake it up.
+* The webServer triggers the callback within "readUserPermissions", waking up the async-driver.
+* DriverBody executes logic until "readUserPermissions", loading the cached result for this Task.
+* DriverBody executes logic until "promptUserForNewValue".
+* DriverBody executes "promptUserForNewValue", and then returns, awaiting an asynchrnous callback to wake it up.
+* The userInterface triggers the callback within "readUserPermissions", waking up the async-driver.
+* DriverBody executes logic until "readUserPermissions", loading the cached result for this Task.
+* DriverBody executes logic until "promptUserForNewValue", loading the cached result for this Task.
+* DriverBody executes logic until "updateStoredValue".
+* DriverBody executes "updateStoredValue", and then returns, awaiting an asynchrnous callback to wake it up.
+* The webServer triggers the callback within "updateStoredValue", waking up the async-driver.
+* DriverBody executes logic until "readUserPermissions", loading the cached result for this Task.
+* DriverBody executes logic until "promptUserForNewValue", loading the cached result for this Task.
+* DriverBody executes logic until "updateStoredValue", loading the cached result for this Task.
+* DriverBody executes the remaining logic, hitting no aditional async tasks, and returns.
+
+If an external resource was read without being wrapped by a Task, it would be execute many more times than expected by the developer,
+and the result could change from run to run, causing non-obvious behavior.
+
+Similarly, if an external resource was written without being wrapped by a Task, it would be execute many more times than expected by the developer,
+and the result could change from run to run, causing non-obvious behavior.
+
+async-executor includes some runtime consistency checks to avoid these situations,
+but it is important that users of this library be made aware of its limitations.
+
+
+
