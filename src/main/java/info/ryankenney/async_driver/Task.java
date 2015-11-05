@@ -1,5 +1,5 @@
 package info.ryankenney.async_driver;
 
-public interface Task   {
+public interface Task<A,R>   {
 
 }
