@@ -173,8 +173,8 @@ public void onUserClick() {
 Considerations
 --------------------
 
-The general rule: *Any read/write actions that interact with data outside of method-scoped variables of the DriverBody
-need to be wrapped in Tasks.*
+The general rule: **Any read/write actions that interact with data outside of method-scoped variables of the DriverBody
+need to be wrapped in Tasks.**
 
 
 This is because the result of each Task is cached and replayed as the DriverBody is re-executed on the return of
