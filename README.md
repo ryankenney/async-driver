@@ -188,16 +188,16 @@ leverages three asynchronous Tasks:
 This means that the async-driver will cause the following order of execution:
 
 * DriverBody executes logic until "readUserPermissions".
-* DriverBody executes "readUserPermissions", and then returns, awaiting an asynchrnous callback to wake it up.
+* **DriverBody executes "readUserPermissions"**, and then returns, awaiting an asynchrnous callback to wake it up.
 * The webServer triggers the callback within "readUserPermissions", waking up the async-driver.
 * DriverBody executes logic until "readUserPermissions", loading the cached result for this Task.
 * DriverBody executes logic until "promptUserForNewValue".
-* DriverBody executes "promptUserForNewValue", and then returns, awaiting an asynchrnous callback to wake it up.
+* **DriverBody executes "promptUserForNewValue"**, and then returns, awaiting an asynchrnous callback to wake it up.
 * The userInterface triggers the callback within "readUserPermissions", waking up the async-driver.
 * DriverBody executes logic until "readUserPermissions", loading the cached result for this Task.
 * DriverBody executes logic until "promptUserForNewValue", loading the cached result for this Task.
 * DriverBody executes logic until "updateStoredValue".
-* DriverBody executes "updateStoredValue", and then returns, awaiting an asynchrnous callback to wake it up.
+* **DriverBody executes "updateStoredValue"**, and then returns, awaiting an asynchrnous callback to wake it up.
 * The webServer triggers the callback within "updateStoredValue", waking up the async-driver.
 * DriverBody executes logic until "readUserPermissions", loading the cached result for this Task.
 * DriverBody executes logic until "promptUserForNewValue", loading the cached result for this Task.
