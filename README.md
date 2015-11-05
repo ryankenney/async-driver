@@ -91,7 +91,7 @@ For example, this models the logic above:
 	});
 ```
 
-From here, you still have to wrap each of the asynchronous actions in Task object,
+From here, you have to wrap each of the asynchronous actions in Task object,
 but the resulting code is arguably much more legible. Here is a full example:
 
 ```java
