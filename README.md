@@ -1,9 +1,6 @@
 async-driver
 ====================
 
-[LICENSE](LICENSE.md)
-
-
 The Problem
 --------------------
 
