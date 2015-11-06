@@ -170,15 +170,153 @@ public void onUserClick() {
 }
 ```
 
-Considerations
+Critical Rules of the Road
 --------------------
 
-The general rule: **Any read/write actions that interact with data outside of method-scoped variables of the DriverBody
+* **Wrap all reads/writes of non-local data in AsyncTasks/SyncTasks**
+	* ...
+* **Don't use try/catch in the AsyncDriver body**
+	* ...
+
+### Wrap all reads/writes of non-local data in AsyncTasks/SyncTasks
+
+Here is an example of what not to do (see comments):
+
+```java
+		final AsyncDriver driver = new AsyncDriver();
+		driver.execute(new DriverBody() {
+			public void run() {
+				Permissions permissions = driver.execute(readUserPermissions, user);
+				// ERROR: Accessing a class variable! (defined outside of the DriverBody method)
+				// This needs to be wrapped in a SyncTask
+				if (updateServerValueCheckbox.isSet()) {
+					// WARNING: This method may or may access external variables
+					// within. We can't tell from here, so it's safest to wrap
+					// it in a SyncTask to ensure that edits to the method body do
+					// not break the DriverBody.
+					if (hasEditPermission(permissions)) {
+						driver.execute(notifyPermissionsError);
+					} else {
+						String userInput = driver.execute(promptUserForNewValue);
+						Status storeStatus = driver.execute(updateStoredValue, userInput);
+						if (storeStatus != Status.OK) {
+							driver.execute(notifyStoreError);
+						}
+					}
+				}
+			}
+		});
+```
+
+async-driver can only function properly if all access to variables outside of the **method scope** is wrapped by
+AsyncTask/SyncTask and executed by driver.execute(Task).
+
+
+### Don't use try/catch in the AsyncDriver body
+
+Never use try/catch blocks to cature exceptions escaping from AsyncTask/SyncTask. async-driver uses exceptions (Error)
+to interrupt execution when waiting for a response from an asynchronus action, so they need to be able to leak
+out of the DriverBody.
+
+Here is an example of what not to do:
+
+```java
+		final AsyncDriver driver = new AsyncDriver();
+		driver.execute(new DriverBody() {
+			public void run() {
+				// ERROR: Do not use try/catch blocks within the DriveBody.
+				// Instead, incorporate try/catch logic into the body of one or
+				// more AsyncTask/SyncTax.
+				try {
+					driver.execute(readUserPermissions, user);
+				} catch (Exception e) {
+					driver.execute(notifyUserOfReadError);
+				}
+			}
+		});
+```
+
+Here's a fixed version of that code:
+
+```java
+		final AsyncDriver driver = new AsyncDriver();
+		driver.execute(new DriverBody() {
+			public void run() {
+				// NOTE: Now now exception handling here,
+				// but instead it is inside of readUserPermissions
+				driver.execute(readUserPermissions, user);
+				if (driver.execute(getLastRequestFailed)) {
+					driver.execute(notifyUserOfReadError);
+				}
+			}
+		});
+```
+
+And here's a more complete version of the fix, which shows the exception handling inside of the AsyncTask
+(see comments):
+
+```java
+	WebServer webServer;
+	UserInterface userInterface;
+	User user;
+	
+	public void onUserClick() {
+
+		final AtomicBoolean lastRequestFailed = new AtomicBoolean(false);
+		
+		final AsyncTask<User,Permissions> readUserPermissions = new AsyncTask<User,Permissions>() {
+			public void run(final User user, final ResultHandler<Permissions> resultHandler) {
+				webServer.readUserPermissions(user, new ReturnCallback<Permissions> () {
+					public void handleResult(Permissions result) {
+						// Exception handling has been moved inside of this AsyncTask
+						try {
+							resultHandler.reportComplete(result);
+						} catch (Exception e) {
+							// The exceptional result is stored in an external variable.
+							// That is fine because we're using AsyncTask/SyntTasks
+							// to access the variable.
+							lastRequestFailed.set(true);							
+						}
+					}
+				});
+			}
+		};
+
+		final SyncTask<Void,Void> notifyUserOfReadError = new SyncTask<Void,Void>() {
+			public Void run(Void arg) {
+				userInterface.showError("Failed to read from server");
+				return null;
+			}
+		};
+		
+		final SyncTask<Void,Boolean> getLastRequestFailed = new SyncTask<Void,Boolean>() {
+			public Boolean run(Void arg) {
+				return lastRequestFailed.get();
+			}
+		};
+		
+		final AsyncDriver driver = new AsyncDriver();
+		driver.execute(new DriverBody() {
+			public void run() {
+				// NOTE: Now now exception handling here,
+				// but instead it is inside of readUserPermissions
+				driver.execute(readUserPermissions, user);
+				if (driver.execute(getLastRequestFailed)) {
+					driver.execute(notifyUserOfReadError);
+				}
+			}
+		});
+	}
+```
+
+How it Works
+--------------------
+
+The general rule: **Any read/write actions that interact with data outside of method scoped variables of the DriverBody
 need to be wrapped in Tasks.**
 
-
 This is because the result of each Task is cached and replayed as the DriverBody is re-executed on the return of
-each asynchronous action. For example, looking at the previous code sample, you can see that the DriverBody
+each asynchronous action. For example, looking at the first code sample above, you can see that the DriverBody
 leverages three asynchronous Tasks:
 
 * readUserPermissions
@@ -212,6 +350,4 @@ and the result could change from run to run, causing non-obvious behavior.
 
 async-executor includes some runtime consistency checks to avoid these situations,
 but it is important that users of this library be made aware of its limitations.
-
-
 

@@ -5,8 +5,8 @@ import java.util.List;
 
 public class ExampleBadApp {
 	
-	static class User {
-		public String name;
+	static interface User {
+		public String getName();
 	}
 	
 	static class Permissions {
