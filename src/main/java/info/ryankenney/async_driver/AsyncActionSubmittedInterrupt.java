@@ -1,6 +1,6 @@
 package info.ryankenney.async_driver;
 
 @SuppressWarnings("serial")
-public class AsyncActionSubmittedInterrupt extends RuntimeException {
+public class AsyncActionSubmittedInterrupt extends Error {
 
 }
