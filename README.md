@@ -80,7 +80,6 @@ For example, this models the logic above:
 	final AsyncDriver driver = new AsyncDriver();
 	driver.execute(new DriverBody() {
 		public void run() {
-			
 			Permissions permissions = driver.execute(readUserPermissions, user);
 			if (!driver.execute(hasEditPermission, permissions)) {
 				driver.execute(notifyPermissionsError);
