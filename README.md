@@ -5,6 +5,15 @@ Treat asynchrouns Java actions as synchronous. Don't just chain actions together
 
 No dependencies. 100% pure Java. Works with GWT. Tastes great. Less filling.
 
+Contents
+--------------------
+
+* [The Problem](#the-problem)
+* [A Solution (jasync-driver)](#a-solution-jasync-driver)
+* [Critical Rules of the Road](#critical-rules-of-the-road)
+* [How it Works](#how-it-works)
+* [FAQ](#faq)
+
 The Problem
 --------------------
 
