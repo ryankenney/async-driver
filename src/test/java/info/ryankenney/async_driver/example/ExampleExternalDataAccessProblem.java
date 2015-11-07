@@ -20,7 +20,7 @@ public class ExampleExternalDataAccessProblem {
 	}
 
 	static interface WebServer {
-		public Permissions readUserPermissions(User  user, ReturnCallback<Permissions> permission);
+		public void readUserPermissions(User  user, ReturnCallback<Permissions> permission);
 
 		public void storeValue(String value,  ReturnCallback<Status> returnCallback);
 	}
@@ -115,7 +115,7 @@ public class ExampleExternalDataAccessProblem {
 					// within. We can't tell from here, so it's safest to wrap
 					// it in a SyncTask to ensure that edits to the method body do
 					// not break the DriverBody.
-					if (hasEditPermission(permissions)) {
+					if (!hasEditPermission(permissions)) {
 						driver.execute(notifyPermissionsError);
 					} else {
 						String userInput = driver.execute(promptUserForNewValue);

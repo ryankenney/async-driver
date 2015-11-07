@@ -5,50 +5,39 @@ import info.ryankenney.async_driver.AsyncTask;
 import info.ryankenney.async_driver.DriverBody;
 import info.ryankenney.async_driver.ResultHandler;
 import info.ryankenney.async_driver.SyncTask;
+import info.ryankenney.async_driver.example.supporting.Permissions;
+import info.ryankenney.async_driver.example.supporting.ReturnCallback;
+import info.ryankenney.async_driver.example.supporting.Status;
+import info.ryankenney.async_driver.example.supporting.User;
+import info.ryankenney.async_driver.example.supporting.UserInterface;
+import info.ryankenney.async_driver.example.supporting.UserInterfaceImpl;
+import info.ryankenney.async_driver.example.supporting.WebServer;
+import info.ryankenney.async_driver.example.supporting.WebServerImpl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class ExampleApp {
-	
-	static interface User {
-		public String getName();
-	}
-	
-	static class Permissions {
-		public List<String> permissions = new ArrayList<>();
-	}
+public class ExampleAppWithLogging {
 
-	static interface WebServer {
-		public void readUserPermissions(User  user, ReturnCallback<Permissions> permission);
-
-		public void storeValue(String value,  ReturnCallback<Status> returnCallback);
-	}
-
-	static interface UserInterface {
-		public void showError(String message);
-		public void promptForNewValue(ReturnCallback<String> returnCallback);
-	}
-
-	static interface ReturnCallback<R> {
-		public void handleResult(R result);
-	}
-	
-	static enum Status {
-		OK,
-		FAILURE
-	}
-	
+	Executor browserThread;
 	WebServer webServer;
 	UserInterface userInterface;
-	User user;
-	
-	public void onUserClick() {
+	User user = new User("brad");
+
+	public ExampleAppWithLogging(Executor browserThread)  {
+		this.browserThread = browserThread;
+		this.webServer = new WebServerImpl(browserThread);
+		this.userInterface = new UserInterfaceImpl(browserThread);
+	}
+
+	public void onUserClick(final Runnable onComplete) {
 		
 		final AsyncTask<User,Permissions> readUserPermissions = new AsyncTask<User,Permissions>() {
 			public void run(final User user, final ResultHandler<Permissions> resultHandler) {
 				webServer.readUserPermissions(user, new ReturnCallback<Permissions> () {
 					public void handleResult(Permissions result) {
+						System.out.println("== Executing [readUserPermissions] ==");
 						resultHandler.reportComplete(result);
 					}
 				});
@@ -57,12 +46,14 @@ public class ExampleApp {
 
 		final SyncTask<Permissions,Boolean> hasEditPermission = new SyncTask<Permissions,Boolean>() {
 			public Boolean run(Permissions permissions) {
-				return permissions.permissions.contains("edit");
+				System.out.println("== Executing [hasEditPermission] ==");
+				return permissions.toString().contains("edit");
 			}
 		};
 
 		final SyncTask<Void,Void> notifyPermissionsError = new SyncTask<Void,Void>() {
 			public Void run(Void arg) {
+				System.out.println("== Executing [notifyPermissionsError] ==");
 				userInterface.showError("User does not have edit permission");
 				return null;
 			}
@@ -72,6 +63,7 @@ public class ExampleApp {
 			public void run(final Void  arg, final ResultHandler<String> resultHandler) {
 				userInterface.promptForNewValue(new ReturnCallback<String> () {
 					public void handleResult(String result) {
+						System.out.println("== Executing [promptUserForNewValue] ==");
 						resultHandler.reportComplete(result);
 					}
 				});
@@ -82,6 +74,7 @@ public class ExampleApp {
 			public void run(final String value, final ResultHandler<Status> resultHandler) {
 				webServer.storeValue(value, new ReturnCallback<Status> () {
 					public void handleResult(Status result) {
+						System.out.println("== Executing [updateStoredValue] ==");
 						resultHandler.reportComplete(result);
 					}
 				});
@@ -90,7 +83,8 @@ public class ExampleApp {
 
 		final SyncTask<Void,Void> notifyStoreError = new SyncTask<Void,Void>() {
 			public Void run(Void arg) {
-				userInterface.showError("Store action failed");
+				System.out.println("== Executing [notifyStoreError]  ==");
+				userInterface.showError("Store action failed!");
 				return null;
 			}
 		};
@@ -98,17 +92,31 @@ public class ExampleApp {
 		final AsyncDriver driver = new AsyncDriver();
 		driver.execute(new DriverBody() {
 			public void run() {
-				
+				System.out.printf("Launching DriverBody%n");
 				Permissions permissions = driver.execute(readUserPermissions, user);
-				if (!driver.execute(hasEditPermission, permissions)) {
+				System.out.printf("Value of permissions: %s%n", permissions);
+				Boolean hasPermission = driver.execute(hasEditPermission, permissions);
+				System.out.printf("Value of hasPermission: %s%n", hasPermission);
+				if (!hasPermission) {
 					driver.execute(notifyPermissionsError);
 				} else {
 					String userInput = driver.execute(promptUserForNewValue);
+					System.out.printf("Value of userInput: %s%n", userInput);
 					Status storeStatus = driver.execute(updateStoredValue, userInput);
+					System.out.printf("Value of storeStatus: %s%n", storeStatus);
 					if (storeStatus != Status.OK) {
 						driver.execute(notifyStoreError);
 					}
 				}
+			}
+		}, onComplete);
+	}
+	
+	public static void main(String[] ags) {
+		final ExecutorService browserThread = Executors.newFixedThreadPool(1);
+		new ExampleAppWithLogging(browserThread).onUserClick(new Runnable() {
+			public void run() {
+				browserThread.shutdown();
 			}
 		});
 	}

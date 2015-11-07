@@ -21,7 +21,7 @@ public class ExampleExceptionProblemWorkaround {
 	}
 
 	static interface WebServer {
-		public Permissions readUserPermissions(User  user, ReturnCallback<Permissions> permission);
+		public void readUserPermissions(User  user, ReturnCallback<Permissions> permission);
 
 		public void storeValue(String value,  ReturnCallback<Status> returnCallback);
 	}

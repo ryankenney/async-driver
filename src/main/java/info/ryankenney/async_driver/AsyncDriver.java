@@ -10,8 +10,12 @@ public class AsyncDriver {
 	private DriverBody body;
 	private List<HistoryEntry> historyOfExecutedTasks = new ArrayList<>();
 	int stepInLogicGraph;
-	
+
 	public void execute(DriverBody driverBody) {
+		execute(driverBody, null);
+	}
+
+	public void execute(DriverBody driverBody, Runnable onComplete) {
 		this.body = driverBody;
 		stepInLogicGraph = 0;
 		try {
@@ -19,8 +23,10 @@ public class AsyncDriver {
 			// Reset for possible reuse.
 			body = null;
 			historyOfExecutedTasks = new ArrayList<>();
-			// The body completed. Stop.
-			return;
+			// The body completed. Execute any on-complete callback and return.
+			if (onComplete != null) {
+				onComplete.run();
+			}
 		} catch (AsyncActionSubmittedInterrupt a) {
 			// OK. Suspend the logic until the async's callback wakes us back up.
 		}
