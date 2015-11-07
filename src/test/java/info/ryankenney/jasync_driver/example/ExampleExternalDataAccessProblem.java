@@ -1,16 +1,16 @@
-package info.ryankenney.async_driver.example;
+package info.ryankenney.jasync_driver.example;
 
-import info.ryankenney.async_driver.AsyncDriver;
-import info.ryankenney.async_driver.AsyncTask;
-import info.ryankenney.async_driver.DriverBody;
-import info.ryankenney.async_driver.ResultHandler;
-import info.ryankenney.async_driver.SyncTask;
+import info.ryankenney.jasync_driver.JasyncDriver;
+import info.ryankenney.jasync_driver.AsyncTask;
+import info.ryankenney.jasync_driver.DriverBody;
+import info.ryankenney.jasync_driver.ResultHandler;
+import info.ryankenney.jasync_driver.SyncTask;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExampleApp {
-	
+public class ExampleExternalDataAccessProblem {
+
 	static interface User {
 		public String getName();
 	}
@@ -23,6 +23,10 @@ public class ExampleApp {
 		public void readUserPermissions(User  user, ReturnCallback<Permissions> permission);
 
 		public void storeValue(String value,  ReturnCallback<Status> returnCallback);
+	}
+
+	static interface CheckboxWidget {
+		public boolean isSet();
 	}
 
 	static interface UserInterface {
@@ -42,7 +46,12 @@ public class ExampleApp {
 	WebServer webServer;
 	UserInterface userInterface;
 	User user;
+	CheckboxWidget updateServerValueCheckbox;
 	
+	private boolean hasEditPermission(Permissions permissions) {
+		return false;
+	}
+
 	public void onUserClick() {
 		
 		final AsyncTask<User,Permissions> readUserPermissions = new AsyncTask<User,Permissions>() {
@@ -95,21 +104,29 @@ public class ExampleApp {
 			}
 		};
 
-		final AsyncDriver driver = new AsyncDriver();
+		final JasyncDriver driver = new JasyncDriver();
 		driver.execute(new DriverBody() {
 			public void run() {
-				
 				Permissions permissions = driver.execute(readUserPermissions, user);
-				if (!driver.execute(hasEditPermission, permissions)) {
-					driver.execute(notifyPermissionsError);
-				} else {
-					String userInput = driver.execute(promptUserForNewValue);
-					Status storeStatus = driver.execute(updateStoredValue, userInput);
-					if (storeStatus != Status.OK) {
-						driver.execute(notifyStoreError);
+				// ERROR: Accessing a class variable! (defined outside of the DriverBody method)
+				// This needs to be wrapped in a SyncTask
+				if (updateServerValueCheckbox.isSet()) {
+					// WARNING: This method may or may access external variables
+					// within. We can't tell from here, so it's safest to wrap
+					// it in a SyncTask to ensure that edits to the method body do
+					// not break the DriverBody.
+					if (!hasEditPermission(permissions)) {
+						driver.execute(notifyPermissionsError);
+					} else {
+						String userInput = driver.execute(promptUserForNewValue);
+						Status storeStatus = driver.execute(updateStoredValue, userInput);
+						if (storeStatus != Status.OK) {
+							driver.execute(notifyStoreError);
+						}
 					}
 				}
 			}
 		});
 	}
+
 }

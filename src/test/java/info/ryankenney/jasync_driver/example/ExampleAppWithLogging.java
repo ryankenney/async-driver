@@ -1,18 +1,18 @@
-package info.ryankenney.async_driver.example;
+package info.ryankenney.jasync_driver.example;
 
-import info.ryankenney.async_driver.AsyncDriver;
-import info.ryankenney.async_driver.AsyncTask;
-import info.ryankenney.async_driver.DriverBody;
-import info.ryankenney.async_driver.ResultHandler;
-import info.ryankenney.async_driver.SyncTask;
-import info.ryankenney.async_driver.example.supporting.Permissions;
-import info.ryankenney.async_driver.example.supporting.ReturnCallback;
-import info.ryankenney.async_driver.example.supporting.Status;
-import info.ryankenney.async_driver.example.supporting.User;
-import info.ryankenney.async_driver.example.supporting.UserInterface;
-import info.ryankenney.async_driver.example.supporting.UserInterfaceImpl;
-import info.ryankenney.async_driver.example.supporting.WebServer;
-import info.ryankenney.async_driver.example.supporting.WebServerImpl;
+import info.ryankenney.jasync_driver.JasyncDriver;
+import info.ryankenney.jasync_driver.AsyncTask;
+import info.ryankenney.jasync_driver.DriverBody;
+import info.ryankenney.jasync_driver.ResultHandler;
+import info.ryankenney.jasync_driver.SyncTask;
+import info.ryankenney.jasync_driver.example.supporting.Permissions;
+import info.ryankenney.jasync_driver.example.supporting.ReturnCallback;
+import info.ryankenney.jasync_driver.example.supporting.Status;
+import info.ryankenney.jasync_driver.example.supporting.User;
+import info.ryankenney.jasync_driver.example.supporting.UserInterface;
+import info.ryankenney.jasync_driver.example.supporting.UserInterfaceImpl;
+import info.ryankenney.jasync_driver.example.supporting.WebServer;
+import info.ryankenney.jasync_driver.example.supporting.WebServerImpl;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -89,7 +89,7 @@ public class ExampleAppWithLogging {
 			}
 		};
 
-		final AsyncDriver driver = new AsyncDriver();
+		final JasyncDriver driver = new JasyncDriver();
 		driver.execute(new DriverBody() {
 			public void run() {
 				System.out.printf("Launching DriverBody%n");

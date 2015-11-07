@@ -1,4 +1,4 @@
-package info.ryankenney.async_driver;
+package info.ryankenney.jasync_driver;
 
 public interface SyncTask<A,R> extends Task<A,R> {
 

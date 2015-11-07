@@ -1,11 +1,11 @@
-package info.ryankenney.async_driver;
+package info.ryankenney.jasync_driver;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AsyncDriver {
+public class JasyncDriver {
 
-	public AsyncDriver() {}
+	public JasyncDriver() {}
 	
 	private DriverBody body;
 	private List<HistoryEntry> historyOfExecutedTasks = new ArrayList<>();
@@ -27,7 +27,7 @@ public class AsyncDriver {
 			if (onComplete != null) {
 				onComplete.run();
 			}
-		} catch (AsyncActionSubmittedInterrupt a) {
+		} catch (JasyncActionSubmittedInterrupt a) {
 			// OK. Suspend the logic until the async's callback wakes us back up.
 		}
 	}
@@ -62,7 +62,7 @@ public class AsyncDriver {
 					execute(body);
 				}
 			});
-			throw new AsyncActionSubmittedInterrupt();
+			throw new JasyncActionSubmittedInterrupt();
 		} else {
 			SyncTask<A,R> syncTask = ((SyncTask<A,R>) task);
 			R result = syncTask.run(arg);

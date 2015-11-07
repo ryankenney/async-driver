@@ -1,4 +1,4 @@
-async-driver
+jasync-driver
 ====================
 
 Treat asynchrouns Java actions as synchronous. Don't just chain actions together, write standard delarative logic without callbacks!
@@ -155,7 +155,7 @@ public void onUserClick() {
 		}
 	};
 
-	final AsyncDriver driver = new AsyncDriver();
+	final JasyncDriver driver = new JasyncDriver();
 	driver.execute(new DriverBody() {
 		public void run() {
 			
@@ -187,7 +187,7 @@ Critical Rules of the Road
 Here is an example of what not to do (see comments):
 
 ```java
-		final AsyncDriver driver = new AsyncDriver();
+		final JasyncDriver driver = new JasyncDriver();
 		driver.execute(new DriverBody() {
 			public void run() {
 				Permissions permissions = driver.execute(readUserPermissions, user);
@@ -212,20 +212,20 @@ Here is an example of what not to do (see comments):
 		});
 ```
 
-async-driver can only function properly if all access to variables outside of the **method scope** is wrapped by
+jasync-driver can only function properly if all access to variables outside of the **method scope** is wrapped by
 AsyncTask/SyncTask and executed by driver.execute(Task).
 
 
 ### Don't use try/catch in the AsyncDriver body
 
-Never use try/catch blocks to cature exceptions escaping from AsyncTask/SyncTask. async-driver uses exceptions (Error)
+Never use try/catch blocks to cature exceptions escaping from AsyncTask/SyncTask. jasync-driver uses exceptions (Error)
 to interrupt execution when waiting for a response from an asynchronus action, so they need to be able to leak
 out of the DriverBody.
 
 Here is an example of what not to do:
 
 ```java
-		final AsyncDriver driver = new AsyncDriver();
+		final JasyncDriver driver = new JasyncDriver();
 		driver.execute(new DriverBody() {
 			public void run() {
 				// ERROR: Do not use try/catch blocks within the DriveBody.
@@ -243,7 +243,7 @@ Here is an example of what not to do:
 Here's a fixed version of that code:
 
 ```java
-		final AsyncDriver driver = new AsyncDriver();
+		final JasyncDriver driver = new JasyncDriver();
 		driver.execute(new DriverBody() {
 			public void run() {
 				// NOTE: Now now exception handling here,
@@ -299,7 +299,7 @@ And here's a more complete version of the fix, which shows the exception handlin
 			}
 		};
 		
-		final AsyncDriver driver = new AsyncDriver();
+		final JasyncDriver driver = new JasyncDriver();
 		driver.execute(new DriverBody() {
 			public void run() {
 				// NOTE: Now now exception handling here,
@@ -318,13 +318,13 @@ How it Works
 
 Here is the the basic internal execution of async-executor:
 
-* AsyncDriver launches the DriverBody method
+* JasyncDriver launches the DriverBody method
 * When the DriverBody hits an AsyncTask:
-	* AsyncDriver launches the asynchronous action with a callback to wake up AsyncDriver on return
-	* AsyncDriver throws an Exception (Error) to quickly terminate the DriverBody
-* Eventually the asynchronous action's callback wakes up AsyncDriver
-* AsyncDriver caches any value returned by the asynchronous action
-* AsyncDriver launches the DriverBody method
+	* JasyncDriver launches the asynchronous action with a callback to wake up JasyncDriver on return
+	* JasyncDriver throws an Exception (Error) to quickly terminate the DriverBody
+* Eventually the asynchronous action's callback wakes up JasyncDriver
+* JasyncDriver caches any value returned by the asynchronous action
+* JasyncDriver launches the DriverBody method
 * When the DriverBody hits the same AsyncTask, it simply uses the cached return value instead of executing it again
 * (the same process is repeated for each AsyncTask until the DriverBody exists cleanly)
 
@@ -397,7 +397,7 @@ public void onUserClick() {
 		}
 	};
 
-	final AsyncDriver driver = new AsyncDriver();
+	final JasyncDriver driver = new JasyncDriver();
 	driver.execute(new DriverBody() {
 		public void run() {
 			System.out.printf("Launching DriverBody%n");
@@ -449,15 +449,14 @@ FAQ
 
 ### Can you reuse the same AsynTask/SyncTask multiple times within the same DriverBody?
 
-Yes! async-driver caches the result of each Task by execution location,
+Yes! jasync-driver caches the result of each Task by execution location,
 so it is safe to use the same Task multiple times in the same DriverBody definition.
 
 ### Can you reuse a DriverBody instance?
 
 Yes. The DriverBody retains no state of it's own.
 
-### Can you reuse an AsyncDriver instance?
+### Can you reuse a JasyncDriver instance?
 
-Yes. The AsyncDriver resets internal state when the DriverBody terminates cleanly.
+Yes. The JasyncDriver resets internal state when the DriverBody terminates cleanly.
 
-TODO: Put these answers in the javadocs

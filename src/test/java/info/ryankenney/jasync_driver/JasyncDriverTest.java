@@ -1,7 +1,14 @@
-package info.ryankenney.async_driver;
+package info.ryankenney.jasync_driver;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import info.ryankenney.jasync_driver.JasyncDriver;
+import info.ryankenney.jasync_driver.AsyncTask;
+import info.ryankenney.jasync_driver.DriverBody;
+import info.ryankenney.jasync_driver.ResultHandler;
+import info.ryankenney.jasync_driver.SyncTask;
+import info.ryankenney.jasync_driver.Task;
+import info.ryankenney.jasync_driver.UnstableConditionsException;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class AsyncDriverTest {
+public class JasyncDriverTest {
 
 	private static class ExecuteLogEntry {
 		Task<?,?> task;
@@ -58,7 +65,7 @@ public class AsyncDriverTest {
 		};
 		
 		// Execute and verify fails with exception
-		final AsyncDriver driver = new AsyncDriver();
+		final JasyncDriver driver = new JasyncDriver();
 		driver.execute(new DriverBody() {
 			public void  run() {
 				witnessedReturns.clear();
@@ -80,7 +87,7 @@ public class AsyncDriverTest {
 	/**
 	 * Verifies that if the path of execution through the {@link DriverBody}
 	 * changes during the re-executions triggered by callbacks, the
-	 * {@link AsyncDriver} detects the problem and throws an
+	 * {@link JasyncDriver} detects the problem and throws an
 	 * {@link UnstableConditionsException}.</p>
 	 */
 	@Test
@@ -106,7 +113,7 @@ public class AsyncDriverTest {
 		};
 		
 		// Execute and verify fails with exception
-		final AsyncDriver driver = new AsyncDriver();
+		final JasyncDriver driver = new JasyncDriver();
 		try {
 			driver.execute(new DriverBody() {
 				public void  run() {
@@ -124,7 +131,7 @@ public class AsyncDriverTest {
 		}
 
 		// Demonstrate that using the driver for all tasks resolves the problem
-		final AsyncDriver driver2 = new AsyncDriver();
+		final JasyncDriver driver2 = new JasyncDriver();
 		driver2.execute(new DriverBody() {
 			public void  run() {
 				String status = driver2.execute(readExternalResource, null);
@@ -189,7 +196,7 @@ public class AsyncDriverTest {
 		};
 
 		// Execute
-		final AsyncDriver driver = new AsyncDriver();
+		final JasyncDriver driver = new JasyncDriver();
 		driver.execute(new DriverBody() {
 			public void  run() {
 				String value = driver.execute(async1, "start");
@@ -241,7 +248,7 @@ public class AsyncDriverTest {
 		final AtomicInteger return1 = new AtomicInteger();
 		final AtomicInteger return2 = new AtomicInteger();
 		final AtomicInteger return3 = new AtomicInteger();
-		final AsyncDriver driver = new AsyncDriver();
+		final JasyncDriver driver = new JasyncDriver();
 		driver.execute(new DriverBody() {
 			public void  run() {
 				return1.set(driver.execute( incrementValue, null));

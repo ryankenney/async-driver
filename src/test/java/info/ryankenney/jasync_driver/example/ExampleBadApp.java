@@ -1,4 +1,4 @@
-package info.ryankenney.async_driver.example;
+package info.ryankenney.jasync_driver.example;
 
 import java.util.ArrayList;
 import java.util.List;
