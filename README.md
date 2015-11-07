@@ -9,7 +9,7 @@ Contents
 --------------------
 
 * [The Problem](#the-problem)
-* [A Solution (jasync-driver)](#a-solution-jasync-driver)
+* [jasync-driver Example](#jasync-driver-example)
 * [Critical Rules of the Road](#critical-rules-of-the-road)
 * [How it Works](#how-it-works)
 * [FAQ](#faq)
@@ -79,7 +79,7 @@ Because many of these actions are asynchronous (they require a server or user re
 
 Where did that nice little block of conditional logic go? It got smeared across all of the callback methods necesssary to string the asynchronous actions together.
 
-A Solution (jasync-driver)
+jasync-driver Example
 --------------------
 
 With jasync-driver, we can define the logic block as if everything is synchronous.
