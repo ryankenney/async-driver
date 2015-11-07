@@ -1,6 +1,10 @@
 async-driver
 ====================
 
+Treat asynchrouns Java actions as synchronous. Don't just chain actions together, write standard delarative logic without callbacks!
+
+No dependencies. 100% pure Java. Works with GWT. Tastes great. Less filling.
+
 The Problem
 --------------------
 
@@ -78,7 +82,7 @@ For example, this models the logic above:
 		public void run() {
 			
 			Permissions permissions = driver.execute(readUserPermissions, user);
-			if (driver.execute(hasEditPermission, permissions)) {
+			if (!driver.execute(hasEditPermission, permissions)) {
 				driver.execute(notifyPermissionsError);
 			} else {
 				String userInput = driver.execute(promptUserForNewValue);
@@ -156,7 +160,7 @@ public void onUserClick() {
 		public void run() {
 			
 			Permissions permissions = driver.execute(readUserPermissions, user);
-			if (driver.execute(hasEditPermission, permissions)) {
+			if (!driver.execute(hasEditPermission, permissions)) {
 				driver.execute(notifyPermissionsError);
 			} else {
 				String userInput = driver.execute(promptUserForNewValue);
@@ -194,7 +198,7 @@ Here is an example of what not to do (see comments):
 					// within. We can't tell from here, so it's safest to wrap
 					// it in a SyncTask to ensure that edits to the method body do
 					// not break the DriverBody.
-					if (hasEditPermission(permissions)) {
+					if (!hasEditPermission(permissions)) {
 						driver.execute(notifyPermissionsError);
 					} else {
 						String userInput = driver.execute(promptUserForNewValue);
@@ -312,42 +316,148 @@ And here's a more complete version of the fix, which shows the exception handlin
 How it Works
 --------------------
 
-The general rule: **Any read/write actions that interact with data outside of method scoped variables of the DriverBody
-need to be wrapped in Tasks.**
+Here is the the basic internal execution of async-executor:
 
-This is because the result of each Task is cached and replayed as the DriverBody is re-executed on the return of
-each asynchronous action. For example, looking at the first code sample above, you can see that the DriverBody
-leverages three asynchronous Tasks:
+* AsyncDriver launches the DriverBody method
+* When the DriverBody hits an AsyncTask:
+	* AsyncDriver launches the asynchronous action with a callback to wake up AsyncDriver on return
+	* AsyncDriver throws an Exception (Error) to quickly terminate the DriverBody
+* Eventually the asynchronous action's callback wakes up AsyncDriver
+* AsyncDriver caches any value returned by the asynchronous action
+* AsyncDriver launches the DriverBody method
+* When the DriverBody hits the same AsyncTask, it simply uses the cached return value instead of executing it again
+* (the same process is repeated for each AsyncTask until the DriverBody exists cleanly)
 
-* readUserPermissions
-* promptUserForNewValue
-* updateStoredValue
+The net effect is that thet DriverBody is potentially run many, many times,
+but the AsyncTasks/SyncTasks are each run only once (or run as many times as they appear in the DriverBody--they can be reused).
 
-This means that the async-driver will cause the following order of execution:
+Here is a modified code example that includes logging to demonstration order of execution:
 
-* DriverBody executes logic until "readUserPermissions".
-* **DriverBody executes "readUserPermissions"**, and then returns, awaiting an asynchrnous callback to wake it up.
-* The webServer triggers the callback within "readUserPermissions", waking up the async-driver.
-* DriverBody executes logic until "readUserPermissions", loading the cached result for this Task.
-* DriverBody executes logic until "promptUserForNewValue".
-* **DriverBody executes "promptUserForNewValue"**, and then returns, awaiting an asynchrnous callback to wake it up.
-* The userInterface triggers the callback within "readUserPermissions", waking up the async-driver.
-* DriverBody executes logic until "readUserPermissions", loading the cached result for this Task.
-* DriverBody executes logic until "promptUserForNewValue", loading the cached result for this Task.
-* DriverBody executes logic until "updateStoredValue".
-* **DriverBody executes "updateStoredValue"**, and then returns, awaiting an asynchrnous callback to wake it up.
-* The webServer triggers the callback within "updateStoredValue", waking up the async-driver.
-* DriverBody executes logic until "readUserPermissions", loading the cached result for this Task.
-* DriverBody executes logic until "promptUserForNewValue", loading the cached result for this Task.
-* DriverBody executes logic until "updateStoredValue", loading the cached result for this Task.
-* DriverBody executes the remaining logic, hitting no aditional async tasks, and returns.
+> Note that this is also prime example of why you cannot access external variables within a DriverBody without an AsyncTask/SyncTask wrapper.
+> System.out.printf() is being called many more times than a developer would first expect.
+> 
+> However, in this particular case we're using these log messages to demonstrate the actual exeuction order of things.
 
-If an external resource was read without being wrapped by a Task, it would be execute many more times than expected by the developer,
-and the result could change from run to run, causing non-obvious behavior.
+```java
+public void onUserClick() {
+	
+	final AsyncTask<User,Permissions> readUserPermissions = new AsyncTask<User,Permissions>() {
+		public void run(final User user, final ResultHandler<Permissions> resultHandler) {
+			webServer.readUserPermissions(user, new ReturnCallback<Permissions> () {
+				public void handleResult(Permissions result) {
+					System.out.println("== Executing [readUserPermissions] ==");
+					resultHandler.reportComplete(result);
+				}
+			});
+		}
+	};
 
-Similarly, if an external resource was written without being wrapped by a Task, it would be execute many more times than expected by the developer,
-and the result could change from run to run, causing non-obvious behavior.
+	final SyncTask<Permissions,Boolean> hasEditPermission = new SyncTask<Permissions,Boolean>() {
+		public Boolean run(Permissions permissions) {
+			System.out.println("== Executing [hasEditPermission] ==");
+			return permissions.toString().contains("edit");
+		}
+	};
 
-async-executor includes some runtime consistency checks to avoid these situations,
-but it is important that users of this library be made aware of its limitations.
+	final SyncTask<Void,Void> notifyPermissionsError = new SyncTask<Void,Void>() {
+		public Void run(Void arg) {
+			System.out.println("== Executing [notifyPermissionsError] ==");
+			userInterface.showError("User does not have edit permission");
+			return null;
+		}
+	};
 
+	final AsyncTask<Void,String> promptUserForNewValue = new AsyncTask<Void,String>() {
+		public void run(final Void  arg, final ResultHandler<String> resultHandler) {
+			userInterface.promptForNewValue(new ReturnCallback<String> () {
+				public void handleResult(String result) {
+					System.out.println("== Executing [promptUserForNewValue] ==");
+					resultHandler.reportComplete(result);
+				}
+			});
+		}
+	};
+
+	final AsyncTask<String,Status> updateStoredValue = new AsyncTask<String,Status>() {
+		public void run(final String value, final ResultHandler<Status> resultHandler) {
+			webServer.storeValue(value, new ReturnCallback<Status> () {
+				public void handleResult(Status result) {
+					System.out.println("== Executing [updateStoredValue] ==");
+					resultHandler.reportComplete(result);
+				}
+			});
+		}
+	};
+
+	final SyncTask<Void,Void> notifyStoreError = new SyncTask<Void,Void>() {
+		public Void run(Void arg) {
+			System.out.println("== Executing [notifyStoreError]  ==");
+			userInterface.showError("Store action failed!");
+			return null;
+		}
+	};
+
+	final AsyncDriver driver = new AsyncDriver();
+	driver.execute(new DriverBody() {
+		public void run() {
+			System.out.printf("Launching DriverBody%n");
+			Permissions permissions = driver.execute(readUserPermissions, user);
+			System.out.printf("Value of permissions: %s%n", permissions);
+			Boolean hasPermission = driver.execute(hasEditPermission, permissions);
+			System.out.printf("Value of hasPermission: %s%n", hasPermission);
+			if (!hasPermission) {
+				driver.execute(notifyPermissionsError);
+			} else {
+				String userInput = driver.execute(promptUserForNewValue);
+				System.out.printf("Value of userInput: %s%n", userInput);
+				Status storeStatus = driver.execute(updateStoredValue, userInput);
+				System.out.printf("Value of storeStatus: %s%n", storeStatus);
+				if (storeStatus != Status.OK) {
+					driver.execute(notifyStoreError);
+				}
+			}
+		}
+	});
+}
+```
+
+And here's the resulting output of the sample code:
+
+```
+Launching DriverBody
+== Executing [readUserPermissions] ==
+Launching DriverBody
+Value of permissions: view,edit
+== Executing [hasEditPermission] ==
+Value of hasPermission: true
+== Executing [promptUserForNewValue] ==
+Launching DriverBody
+Value of permissions: view,edit
+Value of hasPermission: true
+Value of userInput: foobar
+== Executing [updateStoredValue] ==
+Launching DriverBody
+Value of permissions: view,edit
+Value of hasPermission: true
+Value of userInput: foobar
+Value of storeStatus: FAILURE
+== Executing [notifyStoreError]  ==
+```
+
+FAQ
+--------------------
+
+### Can you reuse the same AsynTask/SyncTask multiple times within the same DriverBody?
+
+Yes! async-driver caches the result of each Task by execution location,
+so it is safe to use the same Task multiple times in the same DriverBody definition.
+
+### Can you reuse a DriverBody instance?
+
+Yes. The DriverBody retains no state of it's own.
+
+### Can you reuse an AsyncDriver instance?
+
+Yes. The AsyncDriver resets internal state when the DriverBody terminates cleanly.
+
+TODO: Put these answers in the javadocs
