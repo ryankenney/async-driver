@@ -1,27 +1,45 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html>
   <head>
-    <meta charset="UTF-8">
-    <title>Async-driver by ryankenney</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Async-driver by ryankenney</title>
   </head>
+
   <body>
-    <section class="page-header">
-      <h1 class="project-name">Async-driver</h1>
-      <h2 class="project-tagline">Treat asynchrouns Java actions as synchronous. Don&#39;t just chain actions together, write standard delarative logic without callbacks!</h2>
-      <a href="https://github.com/ryankenney/async-driver" class="btn">View on GitHub</a>
-      <a href="https://github.com/ryankenney/async-driver/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/ryankenney/async-driver/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
+    <header>
+      <div class="inner">
+        <h1>Async-driver</h1>
+        <h2>Treat asynchrouns Java actions as synchronous. Don&#39;t just chain actions together, write standard delarative logic without callbacks!</h2>
+        <a href="https://github.com/ryankenney/jasync-driver" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
 
-    <section class="main-content">
-      <p><strong>No dependencies. 100% pure Java. Works with GWT. Tastes great, Less filling.</strong></p>
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <p>No dependencies. 100% pure Java. Works with GWT. Tastes great. Less filling.</p>
 
-<p><a href="README.md">README.md</a></p>
+<h2>
+<a id="contents" class="anchor" href="#contents" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contents</h2>
+
+<ul>
+<li><a href="#the-problem">The Problem</a></li>
+<li><a href="#a-solution-jasync-driver">A Solution (jasync-driver)</a></li>
+<li><a href="#critical-rules-of-the-road">Critical Rules of the Road</a></li>
+<li><a href="#how-it-works">How it Works</a></li>
+<li><a href="#faq">FAQ</a></li>
+</ul>
 
 <h2>
 <a id="the-problem" class="anchor" href="#the-problem" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Problem</h2>
@@ -105,12 +123,12 @@
 <p>Where did that nice little block of conditional logic go? It got smeared across all of the callback methods necesssary to string the asynchronous actions together.</p>
 
 <h2>
-<a id="a-solution-async-driver" class="anchor" href="#a-solution-async-driver" aria-hidden="true"><span class="octicon octicon-link"></span></a>A Solution (async-driver)</h2>
+<a id="a-solution-jasync-driver" class="anchor" href="#a-solution-jasync-driver" aria-hidden="true"><span class="octicon octicon-link"></span></a>A Solution (jasync-driver)</h2>
 
-<p>With async-driver, we can define the logic block as if everything is synchronous.
+<p>With jasync-driver, we can define the logic block as if everything is synchronous.
 For example, this models the logic above:</p>
 
-<div class="highlight highlight-source-java"><pre>    <span class="pl-k">final</span> <span class="pl-smi">AsyncDriver</span> driver <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">AsyncDriver</span>();
+<div class="highlight highlight-source-java"><pre>    <span class="pl-k">final</span> <span class="pl-smi">JasyncDriver</span> driver <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">JasyncDriver</span>();
     driver<span class="pl-k">.</span>execute(<span class="pl-k">new</span> <span class="pl-smi">DriverBody</span>() {
         <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">run</span>() {
             <span class="pl-smi">Permissions</span> permissions <span class="pl-k">=</span> driver<span class="pl-k">.</span>execute(readUserPermissions, user);
@@ -256,7 +274,7 @@ but the resulting code is arguably much more legible. Here is a more complete ex
 AsyncTask/SyncTask and executed by driver.execute(Task).</p>
 
 <h3>
-<a id="dont-use-trycatch-in-the-asyncdriver-body" class="anchor" href="#dont-use-trycatch-in-the-asyncdriver-body" aria-hidden="true"><span class="octicon octicon-link"></span></a>Don't use try/catch in the AsyncDriver body</h3>
+<a id="dont-use-trycatch-in-the-jasyncdriver-body" class="anchor" href="#dont-use-trycatch-in-the-jasyncdriver-body" aria-hidden="true"><span class="octicon octicon-link"></span></a>Don't use try/catch in the JasyncDriver body</h3>
 
 <p>Never use try/catch blocks to cature exceptions escaping from AsyncTask/SyncTask. jasync-driver uses exceptions (Error)
 to interrupt execution when waiting for a response from an asynchronus action, so they need to be able to leak
@@ -350,7 +368,7 @@ out of the DriverBody.</p>
 <h2>
 <a id="how-it-works" class="anchor" href="#how-it-works" aria-hidden="true"><span class="octicon octicon-link"></span></a>How it Works</h2>
 
-<p>Here is the the basic internal execution of async-executor:</p>
+<p>Here is the the basic internal execution of jasync-executor:</p>
 
 <ul>
 <li>JasyncDriver launches the DriverBody method</li>
@@ -501,14 +519,24 @@ so it is safe to use the same Task multiple times in the same DriverBody definit
 <a id="can-you-reuse-a-jasyncdriver-instance" class="anchor" href="#can-you-reuse-a-jasyncdriver-instance" aria-hidden="true"><span class="octicon octicon-link"></span></a>Can you reuse a JasyncDriver instance?</h3>
 
 <p>Yes. The JasyncDriver resets internal state when the DriverBody terminates cleanly.</p>
+        </section>
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/ryankenney/async-driver">Async-driver</a> is maintained by <a href="https://github.com/ryankenney">ryankenney</a>.</span>
+        <aside id="sidebar">
+          <a href="https://github.com/ryankenney/jasync-driver/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/ryankenney/jasync-driver/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
 
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
+          <p class="repo-owner"><a href="https://github.com/ryankenney/jasync-driver"></a> is maintained by <a href="https://github.com/ryankenney">ryankenney</a>.</p>
 
-    </section>
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
 
   
   </body>
