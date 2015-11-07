@@ -70,14 +70,14 @@ Because many of these actions are asynchronous (they require a server or user re
 
 Where did that nice little block of conditional logic go? It got smeared across all of the callback methods necesssary to string the asynchronous actions together.
 
-A Solution (async-driver)
+A Solution (jasync-driver)
 --------------------
 
-With async-driver, we can define the logic block as if everything is synchronous.
+With jasync-driver, we can define the logic block as if everything is synchronous.
 For example, this models the logic above:
 
 ```java
-	final AsyncDriver driver = new AsyncDriver();
+	final JasyncDriver driver = new JasyncDriver();
 	driver.execute(new DriverBody() {
 		public void run() {
 			Permissions permissions = driver.execute(readUserPermissions, user);
@@ -215,7 +215,7 @@ jasync-driver can only function properly if all access to variables outside of t
 AsyncTask/SyncTask and executed by driver.execute(Task).
 
 
-### Don't use try/catch in the AsyncDriver body
+### Don't use try/catch in the JasyncDriver body
 
 Never use try/catch blocks to cature exceptions escaping from AsyncTask/SyncTask. jasync-driver uses exceptions (Error)
 to interrupt execution when waiting for a response from an asynchronus action, so they need to be able to leak
@@ -315,7 +315,7 @@ And here's a more complete version of the fix, which shows the exception handlin
 How it Works
 --------------------
 
-Here is the the basic internal execution of async-executor:
+Here is the the basic internal execution of jasync-executor:
 
 * JasyncDriver launches the DriverBody method
 * When the DriverBody hits an AsyncTask:
