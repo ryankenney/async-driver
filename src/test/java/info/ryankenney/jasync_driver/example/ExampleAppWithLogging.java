@@ -1,8 +1,8 @@
 package info.ryankenney.jasync_driver.example;
 
-import info.ryankenney.jasync_driver.JasyncDriver;
 import info.ryankenney.jasync_driver.AsyncTask;
 import info.ryankenney.jasync_driver.DriverBody;
+import info.ryankenney.jasync_driver.JasyncDriver;
 import info.ryankenney.jasync_driver.ResultHandler;
 import info.ryankenney.jasync_driver.SyncTask;
 import info.ryankenney.jasync_driver.example.supporting.Permissions;
@@ -10,34 +10,34 @@ import info.ryankenney.jasync_driver.example.supporting.ReturnCallback;
 import info.ryankenney.jasync_driver.example.supporting.Status;
 import info.ryankenney.jasync_driver.example.supporting.User;
 import info.ryankenney.jasync_driver.example.supporting.UserInterface;
-import info.ryankenney.jasync_driver.example.supporting.UserInterface;
-import info.ryankenney.jasync_driver.example.supporting.WebServer;
 import info.ryankenney.jasync_driver.example.supporting.WebServer;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
+/**
+ * An example application that uses jasync-driver with detailed logging to
+ * demonstrate the internal program flow.
+ * 
+ * @author rkenney
+ */
 public class ExampleAppWithLogging {
 
-	Executor browserThread;
 	WebServer webServer;
 	UserInterface userInterface;
 	User user = new User("brad");
 
-	public ExampleAppWithLogging(Executor browserThread)  {
-		this.browserThread = browserThread;
-		this.webServer = new WebServer(browserThread);
-		this.userInterface = new UserInterface(browserThread);
+	public ExampleAppWithLogging(WebServer webServer, UserInterface userInterface) {
+		this.webServer = webServer;
+		this.userInterface = userInterface;
 	}
 
+	/* ===== All actions wrapped in AsyncTask/SyncTask ===== */ 
+	
 	public void onUserClick(final Runnable onComplete) {
 		
 		final AsyncTask<User,Permissions> readUserPermissions = new AsyncTask<User,Permissions>() {
 			public void run(final User user, final ResultHandler<Permissions> resultHandler) {
+				System.out.println("== Executing [readUserPermissions] ==");
 				webServer.readUserPermissions(user, new ReturnCallback<Permissions> () {
 					public void handleResult(Permissions result) {
-						System.out.println("== Executing [readUserPermissions] ==");
 						resultHandler.reportComplete(result);
 					}
 				});
@@ -61,9 +61,9 @@ public class ExampleAppWithLogging {
 
 		final AsyncTask<Void,String> promptUserForNewValue = new AsyncTask<Void,String>() {
 			public void run(final Void  arg, final ResultHandler<String> resultHandler) {
+				System.out.println("== Executing [promptUserForNewValue] ==");
 				userInterface.promptForNewValue(new ReturnCallback<String> () {
 					public void handleResult(String result) {
-						System.out.println("== Executing [promptUserForNewValue] ==");
 						resultHandler.reportComplete(result);
 					}
 				});
@@ -72,9 +72,9 @@ public class ExampleAppWithLogging {
 
 		final AsyncTask<String,Status> updateStoredValue = new AsyncTask<String,Status>() {
 			public void run(final String value, final ResultHandler<Status> resultHandler) {
+				System.out.println("== Executing [updateStoredValue] ==");
 				webServer.storeValue(value, new ReturnCallback<Status> () {
 					public void handleResult(Status result) {
-						System.out.println("== Executing [updateStoredValue] ==");
 						resultHandler.reportComplete(result);
 					}
 				});
@@ -89,7 +89,12 @@ public class ExampleAppWithLogging {
 			}
 		};
 
-		final JasyncDriver driver = new JasyncDriver();
+		/* ===== The main driver logic ===== */ 
+		
+		// ATTENTION: Familiarize yourself with the rules of DriverBody before
+		// editing this block. The DriverBody.body() is recursively executed,
+		// with the result of Task executions read from cache.
+		final JasyncDriver driver = new JasyncDriver(onComplete);
 		driver.execute(new DriverBody() {
 			public void run() {
 				System.out.printf("Launching DriverBody%n");
@@ -108,15 +113,6 @@ public class ExampleAppWithLogging {
 						driver.execute(notifyStoreError);
 					}
 				}
-			}
-		}, onComplete);
-	}
-	
-	public static void main(String[] ags) {
-		final ExecutorService browserThread = Executors.newFixedThreadPool(1);
-		new ExampleAppWithLogging(browserThread).onUserClick(new Runnable() {
-			public void run() {
-				browserThread.shutdown();
 			}
 		});
 	}

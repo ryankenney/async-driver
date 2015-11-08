@@ -5,49 +5,32 @@ import info.ryankenney.jasync_driver.DriverBody;
 import info.ryankenney.jasync_driver.JasyncDriver;
 import info.ryankenney.jasync_driver.ResultHandler;
 import info.ryankenney.jasync_driver.SyncTask;
+import info.ryankenney.jasync_driver.example.supporting.Permissions;
+import info.ryankenney.jasync_driver.example.supporting.ReturnCallback;
+import info.ryankenney.jasync_driver.example.supporting.Status;
+import info.ryankenney.jasync_driver.example.supporting.User;
+import info.ryankenney.jasync_driver.example.supporting.UserInterface;
+import info.ryankenney.jasync_driver.example.supporting.WebServer;
 
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * An example application that uses jasync-driver.
+ * 
+ * @author rkenney
+ */
 public class ExampleApp {
 
-	/* ===== Supporting types used by the example ===== */ 
-	
-	static interface User {
-		public String getName();
-	}
-	
-	static class Permissions {
-		public List<String> permissions = new ArrayList<>();
-	}
-
-	static interface WebServer {
-		public void readUserPermissions(User  user, ReturnCallback<Permissions> permission);
-
-		public void storeValue(String value,  ReturnCallback<Status> returnCallback);
-	}
-
-	static interface UserInterface {
-		public void showError(String message);
-		public void promptForNewValue(ReturnCallback<String> returnCallback);
-	}
-
-	static interface ReturnCallback<R> {
-		public void handleResult(R result);
-	}
-	
-	static enum Status {
-		OK,
-		FAILURE
-	}
-	
 	WebServer webServer;
 	UserInterface userInterface;
-	User user;
+	User user = new User("brad");
+
+	public ExampleApp(WebServer webServer, UserInterface userInterface) {
+		this.webServer = webServer;
+		this.userInterface = userInterface;
+	}
 
 	/* ===== All actions wrapped in AsyncTask/SyncTask ===== */ 
 	
-	public void onUserClick() {
+	public void onUserClick(Runnable onComplete) {
 		
 		final AsyncTask<User,Permissions> readUserPermissions = new AsyncTask<User,Permissions>() {
 			public void run(final User user, final ResultHandler<Permissions> resultHandler) {
@@ -61,7 +44,7 @@ public class ExampleApp {
 
 		final SyncTask<Permissions,Boolean> hasEditPermission = new SyncTask<Permissions,Boolean>() {
 			public Boolean run(Permissions permissions) {
-				return permissions.permissions.contains("edit");
+				return permissions.toString().contains("edit");
 			}
 		};
 
@@ -101,7 +84,10 @@ public class ExampleApp {
 
 		/* ===== The main driver logic ===== */ 
 		
-		final JasyncDriver driver = new JasyncDriver();
+		// ATTENTION: Familiarize yourself with the rules of DriverBody before
+		// editing this block. The DriverBody.body() is recursively executed,
+		// with the result of Task executions read from cache.
+		final JasyncDriver driver = new JasyncDriver(onComplete);
 		driver.execute(new DriverBody() {
 			public void run() {
 				Permissions permissions = driver.execute(readUserPermissions, user);

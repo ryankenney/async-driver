@@ -4,30 +4,48 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The central class of the jasync-driver library. See
- * https://github.com/ryankenney/jasync-driver/ for more information about
+ * The central class of the jasync-driver library. See <a
+ * href="https://github.com/ryankenney/jasync-driver"
+ * >https://github.com/ryankenney/jasync-driver</a> for more information about
  * usage.
  * 
  * @author rkenney
  */
 public class JasyncDriver {
 
-	public JasyncDriver() {}
-	
+	private Runnable onComplete;
 	private DriverBody body;
 	private List<HistoryEntry> historyOfExecutedTasks = new ArrayList<>();
 	int stepInLogicGraph;
+
+	/**
+	 * Constructs a driver instance with no final callback.
+	 */
+	public JasyncDriver() {
+		this(null);
+	}
+	
+	/**
+	 * Constructs a driver instance with a final callback.
+	 * 
+	 * @param onComplete
+	 *            The action to execute when the full {@link DriverBody}
+	 *            completes.
+	 */
+	public JasyncDriver(Runnable onComplete) {
+		this.onComplete = onComplete;
+	}
 
 	/**
 	 * Executes the asynchronous/synchronous logic defined within the provided
 	 * {@link DriverBody}. Note that this method will return as soon as the
 	 * first asynchronous task within the {@link DriverBody} is started. If you
 	 * need to respond to completion of the entire {@link DriverBody}, provide a
-	 * callback to {@link #execute(DriverBody, Runnable)}.
+	 * callback to this object with {@link JasyncDriver#JasyncDriver(Runnable)}.
 	 * 
 	 * @param driverBody
 	 *            The asynchronous/synchronous logic to execute.
-	 *            
+	 * 
 	 * @throws UnstableConditionsException
 	 *             If, on recursive executions of the {@link DriverBody} (during
 	 *             asynchronous lulls) the execution path through
@@ -38,32 +56,6 @@ public class JasyncDriver {
 	 *             {@link SyncTask} object(s).
 	 */
 	public void execute(DriverBody driverBody) throws UnstableConditionsException {
-		execute(driverBody, null);
-	}
-
-	/**
-	 * Executes the asynchronous/synchronous logic defined within the provided
-	 * {@link DriverBody}. Executes the provided {@link Runnable} when the final
-	 * {@link Task} is complete. Note that this method will return as soon as
-	 * the first asynchronous task within the {@link DriverBody} is started,
-	 * thus the need for the {@link Runnable}.
-	 * 
-	 * @param driverBody
-	 *            The asynchronous/synchronous logic to execute.
-	 * @param onComplete
-	 *            The callback to execute when the final {@link Task} is
-	 *            complete. If null, ignored.
-	 *            
-	 * @throws UnstableConditionsException
-	 *             If, on recursive executions of the {@link DriverBody} (during
-	 *             asynchronous lulls) the execution path through
-	 *             {@link DriverBody#run()} changes. This generally indicates
-	 *             that {@link DriverBody#run()} is accessing non-local
-	 *             variables that are changing, and the access to those
-	 *             variables should be wrapped in {@link AsyncTask}/
-	 *             {@link SyncTask} object(s).
-	 */
-	public void execute(DriverBody driverBody, Runnable onComplete) throws UnstableConditionsException {
 		this.body = driverBody;
 		stepInLogicGraph = 0;
 		try {

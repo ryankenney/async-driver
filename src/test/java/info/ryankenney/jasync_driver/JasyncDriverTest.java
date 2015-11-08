@@ -2,13 +2,6 @@ package info.ryankenney.jasync_driver;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import info.ryankenney.jasync_driver.JasyncDriver;
-import info.ryankenney.jasync_driver.AsyncTask;
-import info.ryankenney.jasync_driver.DriverBody;
-import info.ryankenney.jasync_driver.ResultHandler;
-import info.ryankenney.jasync_driver.SyncTask;
-import info.ryankenney.jasync_driver.Task;
-import info.ryankenney.jasync_driver.UnstableConditionsException;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -262,5 +255,65 @@ public class JasyncDriverTest {
 		assertEquals(1, return1.get());
 		assertEquals(2, return2.get());
 		assertEquals(3, return3.get());
+	}
+
+	/**
+	 * <p>
+	 * Verifies that one {@link JasyncDriver} can execute another, wrapped in an
+	 * {@link AsyncTask}, and that the resulting order of execution is correct.
+	 * </p>
+	 */
+	@Test
+	public void testNestingJasyncDriver() throws Exception {
+
+		final ArrayList<String> taskExecutions = new ArrayList<>(); 
+		
+		// Setup
+		final AsyncTask<Void, Integer> innerTask = new AsyncTask<Void, Integer>() {
+			public void run(Void arg, ResultHandler<Integer> resultHandler) {
+				taskExecutions.add("innerTask");
+				resultHandler.reportComplete();
+			}
+		};
+		final AsyncTask<Void, Integer> outerBeforeTask = new AsyncTask<Void, Integer>() {
+			public void run(Void arg, ResultHandler<Integer> resultHandler) {
+				taskExecutions.add("outerBeforeTask");
+				resultHandler.reportComplete();
+			}
+		};
+		final AsyncTask<Void, Integer> outerAfterTask = new AsyncTask<Void, Integer>() {
+			public void run(Void arg, ResultHandler<Integer> resultHandler) {
+				taskExecutions.add("outerAfterTask");
+				resultHandler.reportComplete();
+			}
+		};
+		final AsyncTask<Void, Integer> innerDriverWrapper = new AsyncTask<Void, Integer>() {
+			public void run(Void arg, final ResultHandler<Integer> resultHandler) {
+				final JasyncDriver driver = new JasyncDriver();
+				driver.execute(new DriverBody() {
+					public void  run() {
+						driver.execute(innerTask);
+						resultHandler.reportComplete();
+					};
+				});
+			}
+		};
+
+		// Execute
+		final JasyncDriver driver = new JasyncDriver();
+		driver.execute(new DriverBody() {
+			public void  run() {
+				driver.execute(outerBeforeTask);
+				driver.execute(innerDriverWrapper);
+				driver.execute(outerAfterTask);
+			};
+		});
+		
+		// Verify
+		// ... execution order of tasks
+		assertEquals(3, taskExecutions.size());
+		assertEquals("outerBeforeTask", taskExecutions.get(0));
+		assertEquals("innerTask", taskExecutions.get(1));
+		assertEquals("outerAfterTask", taskExecutions.get(2));
 	}
 }

@@ -15,7 +15,7 @@ package info.ryankenney.jasync_driver;
  *            type if you have no use for an argument.
  * @param <R>
  *            The type returned by the task. Use the {@link Void} type if you
- *            have no use for an argument.
+ *            have no use for a return.
  */
 public interface SyncTask<A,R> extends Task<A,R> {
 
