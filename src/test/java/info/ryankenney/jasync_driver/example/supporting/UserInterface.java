@@ -3,6 +3,11 @@ package info.ryankenney.jasync_driver.example.supporting;
 import java.util.concurrent.Executor;
 
 
+/**
+ * A pseudo implemenation of a user interface used for demonstration purposes.
+ * 
+ * @author rkenney
+ */
 public class UserInterface {
 	
 	private Executor browserThread;

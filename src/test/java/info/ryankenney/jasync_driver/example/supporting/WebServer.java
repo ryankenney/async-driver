@@ -2,6 +2,11 @@ package info.ryankenney.jasync_driver.example.supporting;
 
 import java.util.concurrent.Executor;
 
+/**
+ * A pseudo implemenation of a web server used for demonstration purposes.
+ * 
+ * @author rkenney
+ */
 public class WebServer {
 	
 	private Executor browserThread;
