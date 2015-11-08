@@ -50,6 +50,8 @@ public class ExampleExceptionProblemWorkaround {
 	
 	public void onUserClick() {
 
+		/* ===== All actions wrapped in AsyncTask/SyncTask ===== */ 
+		
 		final AtomicBoolean lastRequestFailed = new AtomicBoolean(false);
 		
 		final AsyncTask<User,Permissions> readUserPermissions = new AsyncTask<User,Permissions>() {
@@ -82,6 +84,8 @@ public class ExampleExceptionProblemWorkaround {
 				return lastRequestFailed.get();
 			}
 		};
+		
+		/* ===== The main driver logic ===== */ 
 		
 		final JasyncDriver driver = new JasyncDriver();
 		driver.execute(new DriverBody() {
