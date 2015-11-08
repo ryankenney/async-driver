@@ -9,7 +9,7 @@ package info.ryankenney.jasync_driver;
 public interface DriverBody {
 	
 	/**
-	 * Recursively executed by {@link JasyncDriver} as each contained
+	 * <p>Recursively executed by {@link JasyncDriver} as each contained
 	 * {@link AsyncTask} triggers a callback. When implementing this method, it
 	 * is critically important to follow two rules:</p>
 	 * 
@@ -21,7 +21,7 @@ public interface DriverBody {
 	 * {@link AsyncTask}/{@link SyncTask}.</li>
 	 * </ul>
 	 * 
-	 * For more information about these caveats, see
+	 * <p>For more information about these caveats, see
 	 * https://github.com/ryankenney/jasync-driver.</p>
 	 */
 	public void run();

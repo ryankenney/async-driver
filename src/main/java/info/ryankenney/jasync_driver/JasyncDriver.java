@@ -81,17 +81,27 @@ public class JasyncDriver {
 	}
 
 	/**
+	 * <p>
 	 * Executes the provided {@link AsyncTask}/{@link SyncTask}. This method
 	 * should only be used within the body of a {@link DriverBody} that will be
-	 * subsequently be {@link #execute(DriverBody)}'d by this object.</p>
+	 * subsequently be {@link #execute(DriverBody)}'d by this object.
+	 * </p>
 	 * 
+	 * <p>
 	 * More technically, this method only executes the provided {@link Task} if
 	 * the {@link Task} has not yet been executed since the {@link DriverBody}
 	 * was launched via {@link #execute(DriverBody)}. After that, each execution
 	 * of this method returns the cached return value for the {@link Task}. This
 	 * is part of the illusion that makes asynchronous actions look synchronous
-	 * to the developer.</p>
+	 * to the developer.
+	 * </p>
 	 * 
+	 * @param <A>
+	 *            The type of argument that the {@link Task} accepts. Probably
+	 *            set to {@link Void} when using this particular method since no
+	 *            argument is provided.
+	 * @param <R>
+	 *            The type of result the {@link Task} generates.
 	 * @param task
 	 *            The {@link AsyncTask}/{@link SyncTask} to execute
 	 * @return The value returned by the task.
@@ -110,18 +120,22 @@ public class JasyncDriver {
 	}
 	
 	/**
-	 * Executes the provided {@link AsyncTask}/{@link SyncTask} against the
+	 * <p>Executes the provided {@link AsyncTask}/{@link SyncTask} against the
 	 * provided argument. This method should only be used within the body of a
 	 * {@link DriverBody} that will be subsequently be
 	 * {@link #execute(DriverBody)}'d by this object.</p>
 	 * 
-	 * More technically, this method only executes the provided {@link Task} if
+	 * <p>More technically, this method only executes the provided {@link Task} if
 	 * the {@link Task} has not yet been executed since the {@link DriverBody}
 	 * was launched via {@link #execute(DriverBody)}. After that, each execution
 	 * of this method returns the cached return value for the {@link Task}. This
 	 * is part of the illusion that makes asynchronous actions look synchronous
 	 * to the developer.</p>
 	 * 
+	 * @param <A>
+	 *            The type of argument that the {@link Task} accepts.
+	 * @param <R>
+	 *            The type of result the {@link Task} generates.
 	 * @param task
 	 *            The {@link AsyncTask}/{@link SyncTask} to execute
 	 * @param arg

@@ -30,7 +30,7 @@ public class JasyncDriverTest {
 	}
 
 	/**
-	 * Verifies the basic function of {@link AsyncTask} within a
+	 * <p>Verifies the basic function of {@link AsyncTask} within a
 	 * {@link DriverBody} in three scenarios:</p>
 	 * 
 	 * <ul>
@@ -85,7 +85,7 @@ public class JasyncDriverTest {
 	}
 
 	/**
-	 * Verifies that if the path of execution through the {@link DriverBody}
+	 * <p>Verifies that if the path of execution through the {@link DriverBody}
 	 * changes during the re-executions triggered by callbacks, the
 	 * {@link JasyncDriver} detects the problem and throws an
 	 * {@link UnstableConditionsException}.</p>
@@ -145,7 +145,7 @@ public class JasyncDriverTest {
 	}
 
 	/**
-	 * Executes {@link AsyncTask} and {@link SyncTask} in succession, verifying
+	 * <p>Executes {@link AsyncTask} and {@link SyncTask} in succession, verifying
 	 * that:</p>
 	 * 
 	 * <ul>
@@ -230,7 +230,7 @@ public class JasyncDriverTest {
 	}
 
 	/**
-	 * Verifies that a task can be used multiple times in the same
+	 * <p>Verifies that a task can be used multiple times in the same
 	 * {@link DriverBody}, with different return values on each execution.</p>
 	 */
 	@Test
