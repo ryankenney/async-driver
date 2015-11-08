@@ -10,9 +10,9 @@ import info.ryankenney.jasync_driver.example.supporting.ReturnCallback;
 import info.ryankenney.jasync_driver.example.supporting.Status;
 import info.ryankenney.jasync_driver.example.supporting.User;
 import info.ryankenney.jasync_driver.example.supporting.UserInterface;
-import info.ryankenney.jasync_driver.example.supporting.UserInterfaceImpl;
+import info.ryankenney.jasync_driver.example.supporting.UserInterface;
 import info.ryankenney.jasync_driver.example.supporting.WebServer;
-import info.ryankenney.jasync_driver.example.supporting.WebServerImpl;
+import info.ryankenney.jasync_driver.example.supporting.WebServer;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -27,8 +27,8 @@ public class ExampleAppWithLogging {
 
 	public ExampleAppWithLogging(Executor browserThread)  {
 		this.browserThread = browserThread;
-		this.webServer = new WebServerImpl(browserThread);
-		this.userInterface = new UserInterfaceImpl(browserThread);
+		this.webServer = new WebServer(browserThread);
+		this.userInterface = new UserInterface(browserThread);
 	}
 
 	public void onUserClick(final Runnable onComplete) {
