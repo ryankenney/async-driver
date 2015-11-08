@@ -1,8 +1,8 @@
 package info.ryankenney.jasync_driver.example;
 
-import info.ryankenney.jasync_driver.JasyncDriver;
 import info.ryankenney.jasync_driver.AsyncTask;
 import info.ryankenney.jasync_driver.DriverBody;
+import info.ryankenney.jasync_driver.JasyncDriver;
 import info.ryankenney.jasync_driver.ResultHandler;
 import info.ryankenney.jasync_driver.SyncTask;
 
@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExampleApp {
+
+	/* ===== Supporting types used by the example ===== */ 
 	
 	static interface User {
 		public String getName();
@@ -42,6 +44,8 @@ public class ExampleApp {
 	WebServer webServer;
 	UserInterface userInterface;
 	User user;
+
+	/* ===== All actions wrapped in AsyncTask/SyncTask ===== */ 
 	
 	public void onUserClick() {
 		
@@ -95,10 +99,11 @@ public class ExampleApp {
 			}
 		};
 
+		/* ===== The main driver logic ===== */ 
+		
 		final JasyncDriver driver = new JasyncDriver();
 		driver.execute(new DriverBody() {
 			public void run() {
-				
 				Permissions permissions = driver.execute(readUserPermissions, user);
 				if (!driver.execute(hasEditPermission, permissions)) {
 					driver.execute(notifyPermissionsError);
