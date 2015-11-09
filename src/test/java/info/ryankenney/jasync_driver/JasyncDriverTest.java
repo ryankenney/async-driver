@@ -316,4 +316,47 @@ public class JasyncDriverTest {
 		assertEquals("innerTask", taskExecutions.get(1));
 		assertEquals("outerAfterTask", taskExecutions.get(2));
 	}
+
+	/**
+	 * <p>
+	 * Verifies that one {@link JasyncDriver} executes the the final callback
+	 * when the {@link DriverBody} completes.
+	 * </p>
+	 */
+	@Test
+	public void testFinalCallbakcComplete() throws Exception {
+
+		final ArrayList<String> taskExecutions = new ArrayList<>(); 
+		
+		// Setup
+		final AsyncTask<Void, Void> asyncTask = new AsyncTask<Void, Void>() {
+			public void run(Void arg, ResultHandler<Void> resultHandler) {
+				resultHandler.reportComplete();
+			}
+		};
+		final SyncTask<Void, Void> syncTask = new SyncTask<Void, Void>() {
+			public Void run(Void arg) {
+				return  null;
+			}
+		};
+		final Runnable  onComplete = new Runnable() {
+			public void run() {
+				taskExecutions.add("onComplete");
+			}
+		};
+
+		// Execute
+		final JasyncDriver driver = new JasyncDriver(onComplete);
+		driver.execute(new DriverBody() {
+			public void  run() {
+				driver.execute(syncTask);
+				driver.execute(asyncTask);
+			};
+		});
+		
+		// Verify
+		// ... execution order of tasks
+		assertEquals(1, taskExecutions.size());
+		assertEquals("onComplete", taskExecutions.get(0));
+	}
 }
