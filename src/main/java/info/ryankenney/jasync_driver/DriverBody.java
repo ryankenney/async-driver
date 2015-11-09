@@ -39,7 +39,7 @@ public interface DriverBody {
 	 * 
 	 * <pre>
 	 * // ATTENTION: Familiarize yourself with the rules of DriverBody before
-	 * // editing this block. The DriverBody.body() is recursively executed,
+	 * // editing this block. The DriverBody.body() is recursively executed repeatedly,
 	 * // with the result of Task executions read from cache.
 	 * </pre>
 	 * 

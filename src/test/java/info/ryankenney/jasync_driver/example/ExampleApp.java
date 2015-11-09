@@ -28,9 +28,9 @@ public class ExampleApp {
 		this.userInterface = userInterface;
 	}
 
-	/* ===== All actions wrapped in AsyncTask/SyncTask ===== */ 
-	
 	public void onUserClick(Runnable onComplete) {
+		
+		/* ===== All actions wrapped in AsyncTask/SyncTask ===== */ 
 		
 		final AsyncTask<User,Permissions> readUserPermissions = new AsyncTask<User,Permissions>() {
 			public void run(final User user, final ResultHandler<Permissions> resultHandler) {
@@ -85,7 +85,7 @@ public class ExampleApp {
 		/* ===== The main driver logic ===== */ 
 		
 		// ATTENTION: Familiarize yourself with the rules of DriverBody before
-		// editing this block. The DriverBody.body() is recursively executed,
+		// editing this block. The DriverBody.body() is recursively executed repeatedly,
 		// with the result of Task executions read from cache.
 		final JasyncDriver driver = new JasyncDriver(onComplete);
 		driver.execute(new DriverBody() {
