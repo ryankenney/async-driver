@@ -2,6 +2,11 @@ package info.ryankenney.jasync_driver.example.supporting;
 
 import java.util.concurrent.Executor;
 
+/**
+ * A pseudo implemenation of a web server used for demonstration purposes.
+ * 
+ * @author rkenney
+ */
 public class WebServer {
 	
 	private Executor browserThread;
@@ -11,17 +16,23 @@ public class WebServer {
 	}
 	
 	public void readUserPermissions(User  user, final ReturnCallback<Permissions> returnCallback) {
+		System.out.println("[WEB SERVER] Requesting User Permissions for: "+user);
 		browserThread.execute(new Runnable() {
 			public void run() {
-				returnCallback.handleResult(new Permissions("view,edit"));
+				Permissions result = new Permissions("view,edit");
+				System.out.println("[WEB SERVER] Recieved User Permissions: "+result);
+				returnCallback.handleResult(result);
 			}
 		});
 	}
 	
 	public void storeValue(String value,  final ReturnCallback<Status> returnCallback) {
+		System.out.println("[WEB SERVER] Requesting Store Value: "+value);
 		browserThread.execute(new Runnable() {
 			public void run() {
-				returnCallback.handleResult(Status.FAILURE);
+				Status result = Status.FAILURE;
+				System.out.println("[WEB SERVER] Received Store Value Result: "+result);
+				returnCallback.handleResult(result);
 			}
 		});
 	}

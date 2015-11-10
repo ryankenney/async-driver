@@ -2,13 +2,6 @@ package info.ryankenney.jasync_driver;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import info.ryankenney.jasync_driver.JasyncDriver;
-import info.ryankenney.jasync_driver.AsyncTask;
-import info.ryankenney.jasync_driver.DriverBody;
-import info.ryankenney.jasync_driver.ResultHandler;
-import info.ryankenney.jasync_driver.SyncTask;
-import info.ryankenney.jasync_driver.Task;
-import info.ryankenney.jasync_driver.UnstableConditionsException;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,7 +23,7 @@ public class JasyncDriverTest {
 	}
 
 	/**
-	 * Verifies the basic function of {@link AsyncTask} within a
+	 * <p>Verifies the basic function of {@link AsyncTask} within a
 	 * {@link DriverBody} in three scenarios:</p>
 	 * 
 	 * <ul>
@@ -85,7 +78,7 @@ public class JasyncDriverTest {
 	}
 
 	/**
-	 * Verifies that if the path of execution through the {@link DriverBody}
+	 * <p>Verifies that if the path of execution through the {@link DriverBody}
 	 * changes during the re-executions triggered by callbacks, the
 	 * {@link JasyncDriver} detects the problem and throws an
 	 * {@link UnstableConditionsException}.</p>
@@ -145,7 +138,7 @@ public class JasyncDriverTest {
 	}
 
 	/**
-	 * Executes {@link AsyncTask} and {@link SyncTask} in succession, verifying
+	 * <p>Executes {@link AsyncTask} and {@link SyncTask} in succession, verifying
 	 * that:</p>
 	 * 
 	 * <ul>
@@ -230,7 +223,7 @@ public class JasyncDriverTest {
 	}
 
 	/**
-	 * Verifies that a task can be used multiple times in the same
+	 * <p>Verifies that a task can be used multiple times in the same
 	 * {@link DriverBody}, with different return values on each execution.</p>
 	 */
 	@Test
@@ -262,5 +255,108 @@ public class JasyncDriverTest {
 		assertEquals(1, return1.get());
 		assertEquals(2, return2.get());
 		assertEquals(3, return3.get());
+	}
+
+	/**
+	 * <p>
+	 * Verifies that one {@link JasyncDriver} can execute another, wrapped in an
+	 * {@link AsyncTask}, and that the resulting order of execution is correct.
+	 * </p>
+	 */
+	@Test
+	public void testNestingJasyncDriver() throws Exception {
+
+		final ArrayList<String> taskExecutions = new ArrayList<>(); 
+		
+		// Setup
+		final AsyncTask<Void, Integer> innerTask = new AsyncTask<Void, Integer>() {
+			public void run(Void arg, ResultHandler<Integer> resultHandler) {
+				taskExecutions.add("innerTask");
+				resultHandler.reportComplete();
+			}
+		};
+		final AsyncTask<Void, Integer> outerBeforeTask = new AsyncTask<Void, Integer>() {
+			public void run(Void arg, ResultHandler<Integer> resultHandler) {
+				taskExecutions.add("outerBeforeTask");
+				resultHandler.reportComplete();
+			}
+		};
+		final AsyncTask<Void, Integer> outerAfterTask = new AsyncTask<Void, Integer>() {
+			public void run(Void arg, ResultHandler<Integer> resultHandler) {
+				taskExecutions.add("outerAfterTask");
+				resultHandler.reportComplete();
+			}
+		};
+		final AsyncTask<Void, Integer> innerDriverWrapper = new AsyncTask<Void, Integer>() {
+			public void run(Void arg, final ResultHandler<Integer> resultHandler) {
+				final JasyncDriver driver = new JasyncDriver();
+				driver.execute(new DriverBody() {
+					public void  run() {
+						driver.execute(innerTask);
+						resultHandler.reportComplete();
+					};
+				});
+			}
+		};
+
+		// Execute
+		final JasyncDriver driver = new JasyncDriver();
+		driver.execute(new DriverBody() {
+			public void  run() {
+				driver.execute(outerBeforeTask);
+				driver.execute(innerDriverWrapper);
+				driver.execute(outerAfterTask);
+			};
+		});
+		
+		// Verify
+		// ... execution order of tasks
+		assertEquals(3, taskExecutions.size());
+		assertEquals("outerBeforeTask", taskExecutions.get(0));
+		assertEquals("innerTask", taskExecutions.get(1));
+		assertEquals("outerAfterTask", taskExecutions.get(2));
+	}
+
+	/**
+	 * <p>
+	 * Verifies that one {@link JasyncDriver} executes the the final callback
+	 * when the {@link DriverBody} completes.
+	 * </p>
+	 */
+	@Test
+	public void testFinalCallbakcComplete() throws Exception {
+
+		final ArrayList<String> taskExecutions = new ArrayList<>(); 
+		
+		// Setup
+		final AsyncTask<Void, Void> asyncTask = new AsyncTask<Void, Void>() {
+			public void run(Void arg, ResultHandler<Void> resultHandler) {
+				resultHandler.reportComplete();
+			}
+		};
+		final SyncTask<Void, Void> syncTask = new SyncTask<Void, Void>() {
+			public Void run(Void arg) {
+				return  null;
+			}
+		};
+		final Runnable  onComplete = new Runnable() {
+			public void run() {
+				taskExecutions.add("onComplete");
+			}
+		};
+
+		// Execute
+		final JasyncDriver driver = new JasyncDriver(onComplete);
+		driver.execute(new DriverBody() {
+			public void  run() {
+				driver.execute(syncTask);
+				driver.execute(asyncTask);
+			};
+		});
+		
+		// Verify
+		// ... execution order of tasks
+		assertEquals(1, taskExecutions.size());
+		assertEquals("onComplete", taskExecutions.get(0));
 	}
 }
