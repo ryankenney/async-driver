@@ -5,7 +5,7 @@
 	<artifactId>jasync-driver</artifactId>
 	<name>jasync-driver</name>
 	<packaging>jar</packaging>
-	<version>1.2-SNAPSHOT</version>
+	<version>1.1-SNAPSHOT</version>
 	<description>Library used to define asynchronous logic as if it were synchronous</description>
 	<url>https://github.com/ryankenney/jasync-driver</url>
 
