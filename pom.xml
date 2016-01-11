@@ -5,6 +5,7 @@
 	<artifactId>jasync-driver</artifactId>
 	<packaging>jar</packaging>
 	<version>1.2-SNAPSHOT</version>
+	<description>Library used to define asynchronous logic as if it were synchronous</description>
 	<url>https://github.com/ryankenney/jasync-driver</url>
 
 	<licenses>
@@ -15,6 +16,21 @@
 			<comments>A business-friendly OSS license</comments>
 		</license>
 	</licenses>
+
+	<scm>
+		<url>https://github.com/ryankenney/jasync-driver</url>
+		<connection>scm:git:git://github.com/ryankenney/jasync-driver.git</connection>
+		<developerConnection>scm:git:git@github.com:ryankenney/jasync-driver.git</developerConnection>
+	</scm>
+
+	<developers>
+		<developer>
+			<email>ryan@ryankenney.info</email>
+			<name>Ryan Kenney</name>
+			<url>https://github.com/ryankenney</url>
+			<id>ryankenney</id>
+		</developer>
+	</developers>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
